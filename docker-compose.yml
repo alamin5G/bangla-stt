@@ -1,0 +1,14 @@
+services:
+  bangla-stt:
+    build: .
+    container_name: bangla-stt-service
+    ports:
+      - "5000:5000"
+    volumes:
+      - model_cache:/root/.cache/huggingface
+    environment:
+      - MODEL_SIZE=small
+    restart: unless-stopped
+
+volumes:
+  model_cache:

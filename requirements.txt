@@ -1,0 +1,4 @@
+banglaspeech2text
+flask
+flask-cors
+gunicorn

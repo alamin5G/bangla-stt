@@ -1,11 +1,8 @@
 services:
   bangla-stt:
-    build:
-      context: .
-      network: host
+    build: .
     container_name: bangla-stt-service
-    ports:
-      - "5000:5000"
+    network_mode: host
     volumes:
       - model_cache:/root/.cache/huggingface
     environment:

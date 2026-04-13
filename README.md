@@ -35,8 +35,8 @@ A production-ready **Dockerized REST API** for converting Bengali (Bangla) speec
 ### 1. Clone this repository
 
 ```bash
-git clone https://github.com/your-username/bangla-stt-docker.git
-cd bangla-stt-docker
+git clone https://github.com/alamin5g/bangla-stt.git
+cd bangla-stt
 ```
 
 ### 2. Start the service
@@ -74,7 +74,7 @@ That's it! Your Bangla STT service is running on `http://localhost:5000`. 🎉
 ## 📁 Project Structure
 
 ```
-bangla-stt-docker/
+bangla-stt/
 ├── app.py                  # Flask REST API server
 ├── Dockerfile              # Python 3.10 + dependencies
 ├── docker-compose.yml      # Docker Compose configuration

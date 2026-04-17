@@ -42,6 +42,11 @@ cd bangla-stt
 ### 2. Start the service
 
 ```bash
+docker run --network host bangla-stt
+```
+### or
+
+```bash
 docker compose up -d --build
 ```
 
@@ -55,7 +60,7 @@ curl http://localhost:5000/health
 
 # Transcribe an audio file
 curl -X POST http://localhost:5000/transcribe \
-  -F "audio=@your_bangla_audio.wav"
+  -F "audio=@test.wav"
 ```
 
 **Expected output:**

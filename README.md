@@ -39,11 +39,16 @@ git clone https://github.com/alamin5g/bangla-stt.git
 cd bangla-stt
 ```
 
-### 2. Start the service
+### 2. Start the service with name "bangla-stt-container"
 
 ```bash
-docker run --network host bangla-stt
+docker run --network host --name bangla-stt-container bangla-stt
+
+#after first run if you stop the server [pc] you can run this command to start the service again
+
+docker start bangla-stt-container
 ```
+
 ### or
 
 ```bash
@@ -109,6 +114,7 @@ Health check endpoint to verify the service is running.
 Transcribe a Bangla audio file to text.
 
 **Request:**
+
 - Content-Type: `multipart/form-data`
 - Field: `audio` (file) — Supported formats: MP3, WAV, WebM, M4A, MP4
 
@@ -180,12 +186,12 @@ environment:
   - MODEL_SIZE=small   # Options: tiny, base, small, large
 ```
 
-| Model | Size | WER | Best For | RAM Required |
-|-------|------|-----|----------|-------------|
-| `tiny` | 100-200 MB | 74 | Testing, low-resource | 1-2 GB |
-| `base` | 200-300 MB | 46 | Quick prototyping | 2-4 GB |
-| `small` | ~1 GB | 18 | Production (balanced) | 4-8 GB |
-| `large` | 3-4 GB | 11 | Best accuracy | 8-16 GB |
+| Model     | Size       | WER | Best For              | RAM Required |
+| --------- | ---------- | --- | --------------------- | ------------ |
+| `tiny`  | 100-200 MB | 74  | Testing, low-resource | 1-2 GB       |
+| `base`  | 200-300 MB | 46  | Quick prototyping     | 2-4 GB       |
+| `small` | ~1 GB      | 18  | Production (balanced) | 4-8 GB       |
+| `large` | 3-4 GB     | 11  | Best accuracy         | 8-16 GB      |
 
 > **Lower WER = Better accuracy.** For most use cases, `small` is the recommended choice.
 
@@ -202,14 +208,14 @@ ports:
 
 ## 🔧 Docker Commands Reference
 
-| Command | Description |
-|---------|-------------|
-| `docker compose up -d --build` | Build and start the service |
-| `docker compose down` | Stop and remove the container |
-| `docker compose restart` | Restart the service |
-| `docker compose ps` | Check container status |
-| `docker compose logs -f bangla-stt` | View live logs |
-| `docker compose logs bangla-stt --tail 50` | Last 50 log lines |
+| Command                                      | Description                   |
+| -------------------------------------------- | ----------------------------- |
+| `docker compose up -d --build`             | Build and start the service   |
+| `docker compose down`                      | Stop and remove the container |
+| `docker compose restart`                   | Restart the service           |
+| `docker compose ps`                        | Check container status        |
+| `docker compose logs -f bangla-stt`        | View live logs                |
+| `docker compose logs bangla-stt --tail 50` | Last 50 log lines             |
 
 ---
 
@@ -336,14 +342,14 @@ Or increase Docker memory limit in Docker Desktop settings.
 
 ## 📊 Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Speech Recognition | [BanglaSpeech2Text](https://github.com/shhossain/BanglaSpeech2Text) |
-| ML Engine | [faster-whisper](https://github.com/guillaumekln/faster-whisper) (CTranslate2) |
-| Base Model | OpenAI Whisper (fine-tuned for Bangla) |
-| REST Framework | Flask + Gunicorn |
-| Containerization | Docker + Docker Compose |
-| Python | 3.10 |
+| Component          | Technology                                                                  |
+| ------------------ | --------------------------------------------------------------------------- |
+| Speech Recognition | [BanglaSpeech2Text](https://github.com/shhossain/BanglaSpeech2Text)            |
+| ML Engine          | [faster-whisper](https://github.com/guillaumekln/faster-whisper) (CTranslate2) |
+| Base Model         | OpenAI Whisper (fine-tuned for Bangla)                                      |
+| REST Framework     | Flask + Gunicorn                                                            |
+| Containerization   | Docker + Docker Compose                                                     |
+| Python             | 3.10                                                                        |
 
 ---
 

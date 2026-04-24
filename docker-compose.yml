@@ -6,7 +6,7 @@ services:
     volumes:
       - model_cache:/root/.cache/huggingface
     environment:
-      - MODEL_SIZE=small
+      - MODEL_SIZE=large
     restart: unless-stopped
 
 volumes:

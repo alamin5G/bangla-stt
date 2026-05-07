@@ -3,4 +3,4 @@ WORKDIR /app
 RUN pip install --no-cache-dir banglaspeech2text flask flask-cors gunicorn
 COPY app.py .
 EXPOSE 5000
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--timeout", "120", "app:app"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--timeout", "120", "--access-logfile", "-", "app:app"]

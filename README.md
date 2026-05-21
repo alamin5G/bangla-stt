@@ -25,8 +25,8 @@ A production-ready **Dockerized REST API** for converting Bengali (Bangla) speec
 
 - [Docker](https://docs.docker.com/get-docker/) (v20+)
 - [Docker Compose](https://docs.docker.com/compose/install/) (v2+)
-- ~2 GB disk space for the model
-- Minimum 4 GB RAM (8 GB recommended)
+- ~6 GB disk space (Docker image ~5.5 GB + model cache 200 MB – 4 GB depending on model size)
+- Minimum 4 GB RAM (8 GB recommended for `large` model)
 
 ---
 
@@ -39,25 +39,44 @@ git clone https://github.com/alamin5g/bangla-stt.git
 cd bangla-stt
 ```
 
-### 2. Start the service with name "bangla-stt-container"
+### 2. Build the Docker image
+
+> ⚠️ **Important:** Due to BuildKit DNS resolution issues on some Linux systems, use `docker buildx` with `--network host` instead of `docker compose build`.
 
 ```bash
-docker run --network host --name bangla-stt-container bangla-stt
-
-#after first run if you stop the server [pc] you can run this command to start the service again
-
-docker start bangla-stt-container
+docker buildx build --network host -t bangla-stt .
 ```
 
-### or
+### 3. Run the container
+
+```bash
+docker run -d --network host --name bangla-stt-container \
+  -e MODEL_SIZE=small \
+  -v bangla-stt_model_cache:/root/.cache/huggingface \
+  --restart unless-stopped \
+  bangla-stt
+```
+
+> 💡 After the first run, if you stop/restart your PC, the container auto-starts because of `--restart unless-stopped`. Docker must be running (`sudo systemctl start docker`).
+
+To manually start/stop the container later:
+
+```bash
+docker start bangla-stt-container   # Start
+docker stop bangla-stt-container    # Stop
+```
+
+### Alternative: Using Docker Compose
+
+If `docker compose build` works on your system (no DNS issues):
 
 ```bash
 docker compose up -d --build
 ```
 
-> ⏳ First run: The model (~1 GB) will be downloaded from HuggingFace. This takes 2-10 minutes depending on your internet speed. Subsequent runs use the cached model.
+> ⏳ First run: The model will be downloaded from HuggingFace. Download size depends on `MODEL_SIZE` — `small` is ~240 MB, `large` is ~3-4 GB. This takes 2-10 minutes depending on your internet speed. Subsequent runs use the cached model.
 
-### 3. Test it
+### 4. Test it
 
 ```bash
 # Health check
@@ -197,7 +216,14 @@ environment:
 
 ### Port
 
-Change the port mapping in `docker-compose.yml`:
+The service uses `network_mode: host` by default, which means it runs directly on host port `5000`. To change the port, edit the `gunicorn` command in the `Dockerfile`:
+
+```dockerfile
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", ...]
+# Change 5000 to your preferred port
+```
+
+Alternatively, switch to port mapping by replacing `network_mode: host` in `docker-compose.yml`:
 
 ```yaml
 ports:
@@ -208,14 +234,29 @@ ports:
 
 ## 🔧 Docker Commands Reference
 
-| Command                                      | Description                   |
-| -------------------------------------------- | ----------------------------- |
-| `docker compose up -d --build`             | Build and start the service   |
-| `docker compose down`                      | Stop and remove the container |
-| `docker compose restart`                   | Restart the service           |
-| `docker compose ps`                        | Check container status        |
-| `docker compose logs -f bangla-stt`        | View live logs                |
-| `docker compose logs bangla-stt --tail 50` | Last 50 log lines             |
+### Using `docker run` (recommended)
+
+| Command | Description |
+| ------- | ----------- |
+| `docker buildx build --network host -t bangla-stt .` | Build the image (fixes BuildKit DNS issues) |
+| `docker run -d --network host --name bangla-stt-container -e MODEL_SIZE=small -v bangla-stt_model_cache:/root/.cache/huggingface --restart unless-stopped bangla-stt` | Start the service |
+| `docker start bangla-stt-container` | Start an existing container |
+| `docker stop bangla-stt-container` | Stop the container |
+| `docker logs -f bangla-stt-container` | View live logs |
+| `docker logs bangla-stt-container --tail 50` | Last 50 log lines |
+| `docker rm -f bangla-stt-container` | Force remove the container |
+| `docker volume rm bangla-stt_model_cache` | Delete model cache (to free disk space) |
+
+### Using Docker Compose (if DNS works on your system)
+
+| Command | Description |
+| ------- | ----------- |
+| `docker compose up -d --build` | Build and start the service |
+| `docker compose down` | Stop and remove the container |
+| `docker compose restart` | Restart the service |
+| `docker compose ps` | Check container status |
+| `docker compose logs -f bangla-stt` | View live logs |
+| `docker compose logs bangla-stt --tail 50` | Last 50 log lines |
 
 ---
 
@@ -301,26 +342,47 @@ services:
     restart: unless-stopped
 ```
 
-### DNS resolution errors inside Docker
+### DNS resolution errors inside Docker (BuildKit `pip install` fails)
 
-Add DNS servers to Docker's configuration:
+This is a known issue where Docker BuildKit cannot resolve DNS during `pip install`, even though the host machine has working internet. The error looks like:
+
+```
+ERROR: Could not find a version that satisfies the requirement banglaspeech2text
+```
+
+**Solution 1 (Recommended): Use `docker buildx` with host networking**
+
+```bash
+docker buildx build --network host -t bangla-stt .
+docker run -d --network host --name bangla-stt-container \
+  -e MODEL_SIZE=small \
+  -v bangla-stt_model_cache:/root/.cache/huggingface \
+  --restart unless-stopped \
+  bangla-stt
+```
+
+**Solution 2: Add DNS to Docker daemon config**
 
 ```bash
 sudo mkdir -p /etc/docker
 sudo nano /etc/docker/daemon.json
 ```
 
+Add:
 ```json
 {
   "dns": ["8.8.8.8", "8.8.4.4"]
 }
 ```
 
+Then restart:
 ```bash
 sudo systemctl restart docker
 docker compose down
 docker compose up -d --build
 ```
+
+> ⚠️ **Note:** Solution 2 may not work on all systems. If `docker compose build` still fails after adding DNS, use Solution 1 (`docker buildx build --network host`).
 
 ### Out of memory
 
@@ -337,6 +399,28 @@ Or increase Docker memory limit in Docker Desktop settings.
 
 - Use `small` or `tiny` model instead of `large`
 - If you have a NVIDIA GPU, install [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) for GPU acceleration
+
+### Switching models or freeing disk space
+
+To change the model size, you need to remove the old container and volume, then recreate with the new model:
+
+```bash
+# 1. Stop and remove the container
+docker stop bangla-stt-container
+docker rm bangla-stt-container
+
+# 2. Delete the old model cache (frees disk space)
+docker volume rm bangla-stt_model_cache
+
+# 3. Start with new model size
+docker run -d --network host --name bangla-stt-container \
+  -e MODEL_SIZE=small \
+  -v bangla-stt_model_cache:/root/.cache/huggingface \
+  --restart unless-stopped \
+  bangla-stt
+```
+
+> ⚠️ Deleting the volume means the new model must be re-downloaded on first run.
 
 ---
 

@@ -1,0 +1,37 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- IDE / editor ---
+.idea/
+.vscode/
+
+# --- Secrets / env ---
+.env
+.env.*
+!.env.example
+
+# --- Audio assets (samples are large; never commit raw audio) ---
+*.wav
+*.mp3
+*.webm
+*.m4a
+*.flac
+# test.wav is a committed fixture — keep it tracked.
+!test.wav
+
+# --- Caches / model downloads ---
+.cache/
+hf_cache/
+models/
+
+# --- Logs / OS ---
+*.log
+.DS_Store

@@ -2,3 +2,6 @@ banglaspeech2text
 flask
 flask-cors
 gunicorn
+# Multilingual sentence embedder for pgvector RAG (plan §6.7).
+# MiniLM (paraphrase-multilingual-MiniLM-L12-v2) = 384-dim, CPU-friendly.
+sentence-transformers>=2.7,<4.0
